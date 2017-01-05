@@ -37,6 +37,10 @@ class Person {
 		return 'registration failed';
 	}
 
+	public static function get($id){
+		return new Person($id);
+	}
+
 	private static function read_session(){
 		if(isset(self::$current_person)) $person = $current_person;
 		else {
@@ -81,6 +85,7 @@ class Person {
 	}
 
 	public function __get($name){
+		if($name == 'id') return $this->id;
 		if(!isset($this->data)){
 			$this->data = PersonData::load($this->id);
 		}
