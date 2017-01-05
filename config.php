@@ -1,0 +1,3 @@
+<?php
+define('ROOTPATH','/sapling/');
+?>
