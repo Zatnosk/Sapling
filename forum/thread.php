@@ -16,6 +16,7 @@ $id = isset($_GET['thread']) ? max(1,intval($_GET['thread'])) : 1;
 $page = isset($_GET['page']) ? max(1,intval($_GET['page'])) : 0;
 $thread = ForumData::thread($id,$page);
 ?><h1 class="thread_title"><?=$thread['title']?></h1><?
+$current_person = Person::get_current();
 $people = [];
 foreach($thread['posts'] as $post){
 	if(!isset($people[$post['person_id']])) $people[$post['person_id']] = Person::get($post['person_id']);
@@ -24,8 +25,15 @@ foreach($thread['posts'] as $post){
 <div class="author"><?=$people[$post['person_id']]->name?></div>
 <time class="date" datetime="<?=str_replace(' ','T',$post['creation'])?>"><?=$post['creation']?></time>
 <p>
-<?=nl2br($post['content'])?>
+<?=nl2br(htmlspecialchars($post['content']))?>
 </p>
+<?
+if($current_person->is_moderator){
+	?>
+<a href="<?=ROOTPATH?>forum/remove_post.php?post=<?=$post['id']?>&thread=<?=$thread['id']?>">Remove post</a>
+	<?
+}
+?>
 </div>
 <?}?>
 <nav>

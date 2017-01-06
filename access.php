@@ -16,5 +16,13 @@ class Access {
 			exit;
 		}
 	}
+
+	public static function moderator(){
+		if(!Person::is_logged_in()
+			|| !Person::is_moderator()){
+			header('Location: '.ROOTPATH);
+			exit;
+		}
+	}
 }
 ?>

@@ -47,7 +47,7 @@ class PersonData extends Data {
 	}
 
 	public static function load($id){
-		$result = Data::query("SELECT name FROM people WHERE id=? LIMIT 1",$id);
+		$result = Data::query("SELECT name, is_moderator, is_administrator FROM people WHERE id=? LIMIT 1",$id);
 		if($result && $result->num_rows) return $result->fetch_assoc();
 		return [];
 	}
@@ -87,6 +87,7 @@ class ForumData extends Data {
 		$thread['page_num']=$page==0?$thread['pages']:$page;
 		$thread['posts']=[];
 		foreach($posts_result as $post){
+			if($post['removed']) $post['content'] = "[This post has been removed by a moderator]";
 			$thread['posts'][]=$post;
 		}
 		if($page === 0){
@@ -101,6 +102,7 @@ class ForumData extends Data {
 		$sql = "SELECT forum_post.*, forum_thread.title as thread_title
 		        FROM forum_post
 		        LEFT JOIN forum_thread ON forum_post.thread_id = forum_thread.id
+		        WHERE forum_post.removed = 0
 		        ORDER BY creation
 		        DESC LIMIT $count";
 		$result = static::query($sql);
@@ -111,13 +113,19 @@ class ForumData extends Data {
 		return $posts;
 	}
 
-	public static function create_thread($title){
+	public static function write_thread($title){
 		static::query("INSERT INTO forum_thread SET title=?",$title);
 		if(!static::$mysqli->errno && static::$mysqli->insert_id) return static::$mysqli->insert_id;
 	}
 
 	public static function write_post($thread, $person, $content){
 		static::query("INSERT INTO forum_post (thread_id,person_id,content) VALUES (?,?,?)",$thread, $person->id, $content);
+	}
+
+	public static function remove_post($post, $person){
+		if($person->is_moderator){
+			static::query("UPDATE forum_post SET removed=1,removed_by=? WHERE id = ?", $person->id, $post);
+		}
 	}
 }
 ?>

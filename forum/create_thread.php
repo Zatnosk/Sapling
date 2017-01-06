@@ -6,7 +6,7 @@ require_once __DIR__."/../person/person.php";
 if(Person::is_logged_in()
 	&& isset($_POST['title'])
 	&& isset($_POST['content'])){
-	$thread_id = ForumData::create_thread($_POST['title']);
+	$thread_id = ForumData::write_thread($_POST['title']);
 	if(is_int($thread_id)) ForumData::write_post($thread_id, Person::get_current(), $_POST['content']);
 	header('Location: '.ROOTPATH.'forum/thread.php?thread='.$thread_id);
 	exit;

@@ -22,6 +22,11 @@ class Person {
 		return isset($person);
 	}
 
+	public static function is_moderator(){
+		$person = self::get_current();
+		return $person->is_moderator;
+	}
+
 	public static function get_current(){
 		if(isset(self::$current_person)) return true;
 		$person = self::read_session();
