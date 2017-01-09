@@ -7,7 +7,7 @@ class Data {
 
 	protected static function query($sql, ...$values){
 		if(!isset(self::$mysqli)){
-			self::$mysqli = new mysqli('localhost', self::$mysql_username, self::$mysql_password, self::$mysql_database);
+			self::$mysqli = new mysqli('localhost', MYSQL_USER, MYSQL_PASS, MYSQL_DB);
 		}
 
 		$stmt = self::$mysqli->prepare($sql);
