@@ -42,8 +42,8 @@ class PersonData extends Data {
 
 	public static function register($name,$password){
 		$hash = password_hash($password, PASSWORD_DEFAULT, ['cost'=>self::$hash_cost]);
-		$success = Data::query("INSERT INTO people (name,password_hash) VALUES (?,?)",$name,$hash);
-		if($success) return static::$mysqli->insert_id;
+		Data::query("INSERT INTO people (name,password_hash) VALUES (?,?)",$name,$hash);
+		if(!static::$mysqli->errno) return static::$mysqli->insert_id;
 	}
 
 	public static function load($id){
