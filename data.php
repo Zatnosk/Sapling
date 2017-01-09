@@ -1,8 +1,5 @@
 <?php
 class Data {
-	private static $mysql_username = 'sapling_client';
-	private static $mysql_password = 'qmSkSqHSoJrNu7FI';
-	private static $mysql_database = 'sapling';
 	protected static $mysqli;
 
 	protected static function query($sql, ...$values){
