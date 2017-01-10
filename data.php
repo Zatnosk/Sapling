@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__."/config.php";
 class Data {
 	protected static $mysqli;
 
@@ -17,6 +18,7 @@ class Data {
 			}
 			$stmt->bind_param($types, ...$values);
 		}
+		echo self::$mysqli->error;
 		$stmt->execute();
 		if(self::$mysqli->error) var_dump(self::$mysqli->error);
 		if(self::$mysqli->errno) return false;
@@ -44,9 +46,13 @@ class PersonData extends Data {
 	}
 
 	public static function load($id){
-		$result = Data::query("SELECT name, is_moderator, is_administrator FROM people WHERE id=? LIMIT 1",$id);
+		$result = Data::query("SELECT name, profile, is_moderator, is_administrator FROM people WHERE id=? LIMIT 1",$id);
 		if($result && $result->num_rows) return $result->fetch_assoc();
 		return [];
+	}
+
+	public static function write_profile($id, $profile){
+		Data::query("UPDATE people SET profile=? WHERE id=?",$profile,$id);
 	}
 }
 
@@ -96,12 +102,18 @@ class ForumData extends Data {
 	}
 
 	public static function latest($count = 10){
-		$sql = "SELECT forum_post.*, forum_thread.title as thread_title
-		        FROM forum_post
-		        LEFT JOIN forum_thread ON forum_post.thread_id = forum_thread.id
-		        WHERE forum_post.removed = 0
-		        ORDER BY creation
-		        DESC LIMIT $count";
+		$sql = "SELECT a.*, forum_thread.title as thread_title
+		        FROM forum_thread
+		        LEFT JOIN forum_post as a
+		        	ON a.thread_id = forum_thread.id
+		        		AND a.removed = 0
+		        LEFT JOIN forum_post as b
+		        	ON b.thread_id = forum_thread.id
+		        		AND a.creation < b.creation
+		        		AND b.removed = 0
+		        WHERE b.id IS NULL
+		        ORDER BY a.creation DESC
+		        LIMIT $count";
 		$result = static::query($sql);
 		$posts = [];
 		foreach($result as $post){

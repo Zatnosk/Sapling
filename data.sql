@@ -42,6 +42,7 @@ CREATE TABLE `people` (
   `name` char(30) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password_hash` char(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `registration` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `profile` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `is_moderator` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
   `is_administrator` tinyint(1) UNSIGNED NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

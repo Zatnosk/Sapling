@@ -28,7 +28,7 @@ class Person {
 	}
 
 	public static function get_current(){
-		if(isset(self::$current_person)) return true;
+		if(isset(self::$current_person)) return self::$current_person;
 		$person = self::read_session();
 		if(isset($person)) return $person;
 	}
@@ -65,9 +65,14 @@ class Person {
 
 	private $id;
 	private $data;
+	private $profile;
 
 	public function logout(){
 		$this->unwrite_session();
+	}
+
+	public function write_profile($content){
+		PersonData::write_profile($this->id, $content);
 	}
 
 	private function write_session(){

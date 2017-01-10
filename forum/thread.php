@@ -22,7 +22,7 @@ foreach($thread['posts'] as $post){
 	if(!isset($people[$post['person_id']])) $people[$post['person_id']] = Person::get($post['person_id']);
 ?>
 <div class="post">
-<div class="author"><?=$people[$post['person_id']]->name?></div>
+<a class="author" href="<?=ROOTPATH?>person/?id=<?=$post['person_id']?>"><?=$people[$post['person_id']]->name?></a>
 <time class="date" datetime="<?=str_replace(' ','T',$post['creation'])?>"><?=$post['creation']?></time>
 <p>
 <?=nl2br(htmlspecialchars($post['content']))?>
