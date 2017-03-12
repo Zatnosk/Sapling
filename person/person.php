@@ -27,6 +27,35 @@ class Person {
 		return $person->is_moderator;
 	}
 
+	public static function has_on_contact_list($other_id){
+		$person = self::get_current();
+		return PersonData::is_contact_of($person->id, $other_id);
+	}
+
+	public static function get_contact_list_id($create_if_not_exists = false){
+		$person = self::get_current();
+		$group_id = PersonData::get_contact_group($person->id);
+		if($create_if_not_exists && !isset($group_id)){
+			$group_name = $person->name.'s kontakter';
+			$group_id = GroupData::create_group($group_name);
+			PersonData::set_contact_group($current_person->id, $group_id);
+		}
+		return $group_id;
+	}
+
+	public static function get_contact_list(){
+		$contact_list = [];
+		$person = self::get_current();
+		$group_id = self::get_contact_list_id();
+		if(isset($group_id)){
+			$contacts = GroupData::get_members($group_id);
+			foreach($contacts as $contact){
+				$contact_list[] = Person::get($contact['person_id']);
+			}
+		}
+		return $contact_list;
+	}
+
 	public static function get_current(){
 		if(isset(self::$current_person)) return self::$current_person;
 		$person = self::read_session();
@@ -38,12 +67,17 @@ class Person {
 		if($id){
 			$person = new Person($id);
 			$person->write_session();
+			return;
 		}
 		return 'registration failed';
 	}
 
 	public static function get($id){
 		return new Person($id);
+	}
+
+	public static function exists($id){
+		return isset(self::get($id)->name);
 	}
 
 	private static function read_session(){

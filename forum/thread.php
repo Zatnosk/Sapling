@@ -5,52 +5,32 @@ Access::require_get('thread','forum/');
 require_once __DIR__."/../data.php";
 require_once __DIR__."/../layout.php";
 require_once __DIR__."/../person/person.php";
-open_html();
-menu();
-?>
-<main>
-<a href="<?=ROOTPATH?>forum/">Forum</a>
-<a href="<?=ROOTPATH?>forum/new_post.php?thread=<?=$_GET['thread']?>">New post</a>
-<?
+
 $id = isset($_GET['thread']) ? max(1,intval($_GET['thread'])) : 1;
 $page = isset($_GET['page']) ? max(1,intval($_GET['page'])) : 0;
 $thread = ForumData::thread($id,$page);
-?><h1 class="thread_title"><?=$thread['title']?></h1><?
+
 $current_person = Person::get_current();
 $people = [];
+
+$section = section(body()->el('main'));
+section_nav($section, [
+	'forum/'=>'Forum',
+	"forum/new_post.php?thread=$_GET[thread]"=>'Nyt indlæg'
+]);
+
+$section->el('h1',['class'=>'thread_title'])->te($thread['title']);
+
 foreach($thread['posts'] as $post){
 	if(!isset($people[$post['person_id']])) $people[$post['person_id']] = Person::get($post['person_id']);
-?>
-<div class="post">
-<a class="author" href="<?=ROOTPATH?>person/?id=<?=$post['person_id']?>"><?=$people[$post['person_id']]->name?></a>
-<time class="date" datetime="<?=str_replace(' ','T',$post['creation'])?>"><?=$post['creation']?></time>
-<p>
-<?=nl2br(htmlspecialchars($post['content']))?>
-</p>
-<?
-if($current_person->is_moderator){
-	?>
-<a href="<?=ROOTPATH?>forum/remove_post.php?post=<?=$post['id']?>&thread=<?=$thread['id']?>">Remove post</a>
-	<?
+	$div = $section->el('div',['class'=>'post']);
+	$div->a(ROOTPATH."person/?id=$post[person_id]",$people[$post['person_id']]->name)->at('class','author');
+	$div->el('time',['class'=>'date','datetime'=>str_replace(' ','T',$post['creation'])])->te($post['creation']);
+	$div->el('p')->te(htmlspecialchars($post['content']),HEAL_TEXT_NL2BR);
+	if($current_person->is_moderator){
+		$div->a(ROOTPATH."forum/remove_post.php?post=$post[id]&thread=$thread[id]",'Fjern indlæg');
+	}
 }
-?>
-</div>
-<?}?>
-<nav>
-<?
-function page($num){ ?><a href="<?=ROOTPATH?>forum/thread.php?thread=<?=$_GET['thread']?>&page=<?=$num?>"><?=$num?></a><? }
-$ps = intval($thread['pages']);
-$pn = intval($thread['page_num']);
-if($pn > 3) page(1);
-if($pn > 2) page($pn-2);
-if($pn > 1) page($pn-1);
-?><span class="-current"><?=$pn?></span><?
-if($pn < $ps) page($pn+1);
-if($pn < $ps-1) page($pn+2);
-if($pn < $ps-2) page($ps);
-?>
-</nav>
-<main>
-<?
-close_html();
+
+pagination($section,$thread,"forum/thread.php?thread=$_GET[thread]");
 ?>

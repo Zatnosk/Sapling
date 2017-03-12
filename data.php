@@ -9,6 +9,7 @@ class Data {
 		}
 
 		$stmt = self::$mysqli->prepare($sql);
+		if(self::$mysqli->error) var_dump($sql,self::$mysqli->error);
 		if(!empty($values)){
 			$types = '';
 			foreach($values as $value){
@@ -41,7 +42,7 @@ class PersonData extends Data {
 
 	public static function register($name,$password){
 		$hash = password_hash($password, PASSWORD_DEFAULT, ['cost'=>self::$hash_cost]);
-		Data::query("INSERT INTO people (name,password_hash) VALUES (?,?)",$name,$hash);
+		Data::query("INSERT INTO people (name,password_hash,profile) VALUES (?,?,'')",$name,$hash);
 		if(!static::$mysqli->errno) return static::$mysqli->insert_id;
 	}
 
@@ -53,6 +54,25 @@ class PersonData extends Data {
 
 	public static function write_profile($id, $profile){
 		Data::query("UPDATE people SET profile=? WHERE id=?",$profile,$id);
+	}
+
+	public static function get_contact_group($id){	
+		$result = Data::query("SELECT contact_group_id FROM people WHERE id=?",$id);
+		if($result && $result->num_rows) return $result->fetch_object()->contact_group_id;
+		else return null;
+	}
+
+	public static function set_contact_group($person_id, $group_id){
+		Data::query("UPDATE people SET contact_group_id = ? WHERE id=?",$group_id,$person_id);
+	}
+
+	public static function is_contact_of($idA, $idB){
+		$sql = "SELECT 1
+		        FROM people
+		        INNER JOIN group_membership ON group_membership.group_id = people.contact_group_id
+		        WHERE people.id = ? AND group_membership.person_id = ?";
+		$result = Data::query($sql, $idA, $idB);
+		return $result && $result->num_rows;
 	}
 }
 
@@ -135,6 +155,116 @@ class ForumData extends Data {
 		if($person->is_moderator){
 			static::query("UPDATE forum_post SET removed=1,removed_by=? WHERE id = ?", $person->id, $post);
 		}
+	}
+}
+
+class GroupData extends Data {
+	public static function has_person($group_id, $person_id){
+		$sql = "SELECT 1 FROM group_membership WHERE group_id=? AND person_id=?";
+		$result = static::query($sql,$group_id,$person_id);
+		return $result->num_rows > 0;
+	}
+
+	public static function create_group($name, $is_public = false){
+		$sql = "INSERT INTO group_metadata (name,visibility) VALUES (?,?)";
+		static::query($sql, $name, $is_public ? 'public' : 'private');
+		return static::$mysqli->insert_id;
+	}
+
+	public static function add_person($group_id, $person_id){
+		$sql = "INSERT IGNORE INTO group_membership (group_id,person_id) VALUES (?,?)";
+		static::query($sql,$group_id,$person_id);
+	}
+
+	public static function remove_person($group_id, $person_id){
+		$sql = "DELETE FROM group_membership WHERE group_id=? AND person_id=?";
+		static::query($sql,$group_id,$person_id);
+	}
+
+	public static function get_members($group_id){
+		$sql = "SELECT person_id FROM group_membership WHERE group_id=?";
+		return static::query($sql,$group_id);
+	}
+}
+
+class BlogData extends Data {
+	public static function write($author_id, $title, $content, $visibility){
+		$sql = "INSERT INTO blog (author,title,content,visible_to) VALUES (?,?,?,?)";
+		static::query($sql, $author_id, $title, $content, $visibility);
+		return static::$mysqli->insert_id;
+	}
+
+	public static function set_visibility($author_id, $blog_id, $new_visibility){
+		$sql = "UPDATE blog SET visible_to = ? WHERE id = ? AND author = ?";
+		static::query($sql, $new_visibility, $blog_id, $author_id);
+	}
+
+	public static function get($blog_id, $reader_id){
+		$sql = "SELECT id,author,creation,title,content,
+		        IF(visible_to IS NULL,'public',IF(visible_to = 0,'invisible','contacts')) as visibility
+		        FROM blog
+		        LEFT JOIN group_membership as gm
+		        	ON gm.group_id = blog.visible_to
+		        	AND gm.person_id = ?
+		        WHERE blog.id = ?
+		        	AND (gm.person_id IS NOT NULL OR blog.visible_to IS NULL OR author = ?)
+		        LIMIT 1";
+		$result = static::query($sql, $reader_id, $blog_id, $reader_id);
+		if($result->num_rows > 0){
+			return $result->fetch_object();
+		} else {
+			return null;
+		}
+	}
+
+	public static function list_by_author($author_id, $reader_id){
+		if($author_id == $reader_id){
+			$sql = "SELECT blog.id,creation,title,
+			        IF(visible_to IS NULL,'public',IF(visible_to = 0,'invisible','contacts')) as visibility
+			        FROM blog
+			        WHERE author = ?
+			        ORDER BY creation DESC";
+			return static::query($sql, $reader_id);
+		} else {
+			$sql = "SELECT id,creation,title,
+			        IF(visible_to IS NULL,'public',IF(visible_to = 0,'invisible','contacts')) as visibility
+			        FROM blog
+			        LEFT JOIN group_membership AS gm
+			        	ON gm.group_id = blog.visible_to
+			        	AND gm.person_id = ?
+			        WHERE author = ?
+			        	AND (gm.person_id IS NOT NULL OR blog.visible_to IS NULL)
+			        ORDER BY creation DESC";
+			return static::query($sql, $reader_id, $author_id);
+		}
+	}
+
+	public static function list_by_contacts($person_id){
+		$sql = "SELECT blog.id,blog.creation,blog.title,blog.author,
+		        IF(visible_to IS NULL,'public',IF(visible_to = 0,'invisible','contacts')) as visibility
+		        FROM blog
+		        LEFT JOIN group_membership AS gm
+		        	ON gm.group_id = blog.visible_to
+		        	AND gm.person_id = ?
+		        WHERE author IN
+		        		(SELECT gm.person_id
+		        		FROM people
+		        		INNER JOIN group_membership as gm
+		        			ON gm.group_id = people.contact_group_id
+		        		WHERE people.id = ?)
+		        	AND (gm.person_id IS NOT NULL OR blog.visible_to IS NULL)
+		        ORDER BY creation DESC
+		        LIMIT 10";
+		return static::query($sql, $person_id, $person_id);
+	}
+
+	public static function list_newest_public(){
+		$sql = "SELECT id,author,creation,title
+		        FROM blog
+		        WHERE visible_to IS NULL
+		        ORDER BY creation DESC
+		        LIMIT 10";
+		return static::query($sql);
 	}
 }
 ?>

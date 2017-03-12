@@ -71,6 +71,14 @@ main {
 	min-width: 600px;
 	max-width: calc(100vw - 10rem);
 	box-sizing: border-box;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+main > section {
+	min-width: 500px;
+	max-width: 800px;
+	margin: 0 1rem 1rem 0;
 }
 form {
 	margin: 0 auto;
@@ -136,4 +144,18 @@ li:not(:first-child){
 .post time {
 	float: right;
 	margin: 0 -.5rem 0 0;
+}
+.post .visibility {
+	float: right;
+	clear: right;
+}
+.blog h1 {
+	line-height: 1em;
+}
+.post .actions {
+	margin-top: 1em;
+	text-align: right;
+}
+.post .actions a {
+	margin-left: 1em;
 }
