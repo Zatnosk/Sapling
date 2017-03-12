@@ -9,7 +9,7 @@ class Data {
 		}
 
 		$stmt = self::$mysqli->prepare($sql);
-		if(self::$mysqli->error) var_dump($sql,self::$mysqli->error);
+		//if(self::$mysqli->error) var_dump($sql,self::$mysqli->error);
 		if(!empty($values)){
 			$types = '';
 			foreach($values as $value){
@@ -21,7 +21,7 @@ class Data {
 		}
 		echo self::$mysqli->error;
 		$stmt->execute();
-		if(self::$mysqli->error) var_dump(self::$mysqli->error);
+		//if(self::$mysqli->error) var_dump(self::$mysqli->error);
 		if(self::$mysqli->errno) return false;
 		$result = $stmt->get_result();
 		return $result;
