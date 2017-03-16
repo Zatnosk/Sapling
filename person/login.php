@@ -8,5 +8,5 @@ if(isset($_POST['name']) && isset($_POST['password'])){
 	 	exit;
 	 }
 }
-header('Location: ../index.php?msg='.htmlspecialchars('login failed'));
+header('Location: ../index.php?msg='.urlencode('login failed'));
 ?>

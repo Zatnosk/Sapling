@@ -28,5 +28,5 @@ if(!$is_own_profile){
 
 $usertext = $section->el('div',['class'=>'usertext']);
 if(empty($person->profile)) $usertext->te('Tom profil');
-else $usertext->te(htmlspecialchars($person->profile),HEAL_TEXT_NL2BR);
+else $usertext->te($person->profile,HEAL_TEXT_NL2BR);
 ?>

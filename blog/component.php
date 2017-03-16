@@ -31,7 +31,7 @@ function ul($section, $blogs, $show_author){
 		$ul = $section->el('ul');
 		foreach($blogs as $blog){
 			$li = $ul->el('li');
-			$li->a(ROOTPATH."blog/?id=$blog[id]",htmlspecialchars($blog['title']));
+			$li->a(ROOTPATH."blog/?id=$blog[id]",$blog['title']);
 			if(isset($blog['visibility'])){
 				switch($blog['visibility']){
 					case 'contacts': $visibility = 'kun kontakter'; break;
@@ -39,7 +39,7 @@ function ul($section, $blogs, $show_author){
 					case 'invisible': $visibility = 'skjult';
 				}
 				$li->te(" <$visibility>");
-			} 
+			}
 			$li->te(', ');
 			$li->el('time',['class'=>'date','datetime'=>str_replace(' ','T',$blog['creation'])])->te($blog['creation']);
 			

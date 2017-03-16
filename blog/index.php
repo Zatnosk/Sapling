@@ -18,8 +18,8 @@ if(isset($_GET['id'])){
 			case 'contacts': $vis->te('<kun for kontakter>'); break;
 			case 'public': $vis->te('<offentlig>'); break;
 		}
-		$div->el('h1')->te(htmlspecialchars($blog->title));
-		$div->el('p')->te(htmlspecialchars($blog->content),HEAL_TEXT_NL2BR);
+		$div->el('h1')->te($blog->title);
+		$div->el('p')->te($blog->content,HEAL_TEXT_NL2BR);
 		$actionbar = $div->el('div',['class'=>'actions']);
 		$url = ROOTPATH."blog/set_visibility.php?id=$blog->id&vis=";
 		if($blog->visibility != 'public') $actionbar->a($url.'public','[vis til alle]');

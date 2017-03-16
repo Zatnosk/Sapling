@@ -26,7 +26,7 @@ foreach($thread['posts'] as $post){
 	$div = $section->el('div',['class'=>'post']);
 	$div->a(ROOTPATH."person/?id=$post[person_id]",$people[$post['person_id']]->name)->at('class','author');
 	$div->el('time',['class'=>'date','datetime'=>str_replace(' ','T',$post['creation'])])->te($post['creation']);
-	$div->el('p')->te(htmlspecialchars($post['content']),HEAL_TEXT_NL2BR);
+	$div->el('p')->te($post['content'],HEAL_TEXT_NL2BR);
 	if($current_person->is_moderator){
 		$div->a(ROOTPATH."forum/remove_post.php?post=$post[id]&thread=$thread[id]",'Fjern indlæg');
 	}

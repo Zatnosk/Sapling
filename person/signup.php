@@ -6,11 +6,10 @@ if(isset($_POST['name']) && !empty($_POST['name']) && isset($_POST['password']) 
 	if(isset($error)){
 		var_dump($error);
 		exit;
-		header('Location: ../index.php?msg='.htmlspecialchars($error));
+		header('Location: ../index.php?msg='.urlencode($error));
 		exit;
 	}
-	header('Location: ../index.php?msg='.htmlspecialchars('registration successful'));
-	exit;
+	header('Location: ../index.php?msg='.urlencode('registration successful'));
 }
 	header('Location: ../index.php');
 ?>
