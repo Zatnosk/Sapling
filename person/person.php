@@ -38,7 +38,7 @@ class Person {
 		if($create_if_not_exists && !isset($group_id)){
 			$group_name = $person->name.'s kontakter';
 			$group_id = GroupData::create_group($group_name);
-			PersonData::set_contact_group($current_person->id, $group_id);
+			PersonData::set_contact_group($person->id, $group_id);
 		}
 		return $group_id;
 	}
