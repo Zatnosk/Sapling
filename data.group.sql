@@ -7,7 +7,7 @@ CREATE TABLE `group_membership` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `group_metadata` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` tinytext COLLATE utf8mb4_unicode_ci NOT NULL,
   `visibility` enum('private','public') COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
